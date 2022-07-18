@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import seaborn as sns
 model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32,(3,3),input_shape=(30,100,1),activation=tf.nn.relu),
+            tf.keras.layers.Conv2D(32,(3,3),input_shape=(30,30,1),activation=tf.nn.relu),
             tf.keras.layers.MaxPooling2D(2,2),
 
             tf.keras.layers.Conv2D(64,(3,3),activation=tf.nn.relu),
@@ -18,7 +18,7 @@ model = tf.keras.Sequential([
             tf.keras.layers.Dropout(0.5),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(512, activation=tf.nn.relu),
-            tf.keras.layers.Dense(36, activation=tf.nn.softmax) #para clasificacion
+            tf.keras.layers.Dense(4, activation=tf.nn.softmax) #para clasificacion
         ])
 
 categorias = []
@@ -36,7 +36,7 @@ class Clasificador:
         for category in globals()["categorias"]:
             for imagen in os.listdir('.\\dataset\\train\\'+category):
                 print(imagen)
-                img = Image.open('.\\dataset\\train\\'+category+"\\"+imagen).resize((100,30))
+                img = Image.open('.\\dataset\\train\\'+category+"\\"+imagen).resize((30,30))
                 img = np.asarray(img)
                 print(img.shape)
                 img_rgb = img[:,:,0]
@@ -59,9 +59,10 @@ class Clasificador:
         plt.show()
     def predictAll(self):
         y=[]
+        
         for category in globals()["categorias"]:
             for imagen in os.listdir('.\\dataset\\train\\'+category):
-                img = Image.open('.\\dataset\\train\\'+category+"\\"+imagen).resize((100,30))
+                img = Image.open('.\\dataset\\train\\'+category+"\\"+imagen).resize((30,30))
                 img = np.asarray(img)
                 
                 img_rgb = img[:,:,0]
@@ -73,12 +74,13 @@ class Clasificador:
                 print("archivo dado : ", imagen)
                 print("prediccion de la red: ",categorias[np.argmax(predicciones[0])])
                 resultList["imagen dada"].append(imagen)
-                resultList["prediccion"].append(prediccion)
+                resultList["prediccion"].append(y)
         y=np.asanyarray(y)
         yP= y[:]
         df =    pd.DataFrame(resultList)
         print(globals()["labels"])
         print(yP)
+
         df.to_csv('./output.csv')    
         matriz = tf.math.confusion_matrix(globals()["labels"],yP)
         figMatriz= plt.figure(figsize=(6,6))
@@ -88,8 +90,9 @@ class Clasificador:
         plt.show()
     def predict(self):
         y=[]
+        stringSalida=''
         for imagen in os.listdir('.\\dataset\\test\\'):
-            img = Image.open('.\\dataset\\test\\'+imagen).resize((100,30))
+            img = Image.open('.\\dataset\\test\\'+imagen).resize((30,30))
             img = np.asarray(img)
             
             img_rgb = img[:,:,0]
@@ -102,12 +105,23 @@ class Clasificador:
             print("prediccion de la red: ",categorias[np.argmax(predicciones[0])])
             resultList["imagen dada"].append(imagen)
             resultList["prediccion"].append(prediccion)
+            if(prediccion=="punto"):
+                stringSalida = stringSalida+"."
+            if(prediccion=="raya"):
+                stringSalida = stringSalida+"-"
+            if(prediccion=="diagonal"):
+                stringSalida = stringSalida+"/"
+            if(prediccion=="diagonal doble"):
+                stringSalida = stringSalida+"//"
+
         y=np.asanyarray(y)
         yP= y[:]
+        print(stringSalida)
         df =    pd.DataFrame(resultList)
         print(globals()["labels"])
         print(yP)
         df.to_csv('./output.csv')    
+        return stringSalida
 
         #return(categorias[np.argmax(predicciones[0])])
 

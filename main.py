@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from clasificador import Clasificador
 import errno, os, stat, shutil
+from traductor import Traductor
 
 def handleRemoveReadonly(func, path, exc):
   excvalue = exc[1]
@@ -23,8 +24,9 @@ os.mkdir('./dataset/test')
 xI,yI,xF,yF=0,0,0,0
 interruptor= False
 contador=0
+contador2=0
 def dibujar(event,x,y,flags,param):
-    global xI,yI,xF,yF,interruptor,img,contador
+    global xI,yI,xF,yF,interruptor,img,contador,contador2
 
     if(event==cv2.EVENT_LBUTTONDOWN):
         xI,yI=x,y
@@ -33,16 +35,21 @@ def dibujar(event,x,y,flags,param):
         xF,yF=x,y
         interruptor= True
         recorte=img[yI:yF,xI:xF,:]
-        cv2.resize(recorte,(100,100))
-        cv2.imwrite(f'./dataset/test/recorte{contador}.png',recorte)
-        contador=contador+1
+        cv2.resize(recorte,(30,30))
+        if(contador2==10):
+            contador=contador+1
+            contador2=0
+        cv2.imwrite(f'./dataset/test/recorte{contador}{contador2}.png',recorte)
+        
+        contador2=contador2+1
+        
 
-img=cv2.imread('numeros2.jpg')
+img=cv2.imread('test3.png')
 cv2.namedWindow('display')
 cv2.setMouseCallback('display',dibujar)
 
 while(True):
-    img=cv2.imread('numeros2.jpg')
+    img=cv2.imread('test3.png')
     if(interruptor==True):
         cv2.rectangle(img,(xI,yI),(xF,yF),(255,0,0),2)
     cv2.imshow('display',img)
@@ -57,12 +64,14 @@ fontStyle = tkFont.Font(family="Lucida Grande", size=20)
 
 def importar():
     #import_file_path = filedialog.askopenfilename()
-    clasificador.predictAll()
-
+    texto =clasificador.predict()
+    traducido=traductor.traducir(texto)
+    print(traducido)
 tkinter.Button(window,text="predecir",font=12,command=importar).place(x=80,y=30)
 textPrediction=StringVar()
 texto2 = tkinter.Label(window,textvariable=textPrediction,font=fontStyle,background='#D7FF90').place(x=80,y=70)
 clasificador = Clasificador()
+traductor = Traductor()
 clasificador.train()
 
 window.mainloop()
