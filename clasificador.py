@@ -52,7 +52,7 @@ class Clasificador:
             metrics=['accuracy']
         )
 
-        historial = model.fit(globals()["imagenes"],globals()["labels"],epochs=100)
+        historial = model.fit(globals()["imagenes"],globals()["labels"],epochs=30)
         plt.xlabel('# Epochs')
         plt.ylabel("loss")
         plt.plot(historial.history["loss"])
